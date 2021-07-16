@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import requests
 from requests import Request
 import time
@@ -45,8 +47,8 @@ from config import API_KEY
 # 	that contain both "biden" and "vote". At most 5 URLs for domain for variety. 
 
 def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days)):
-        yield start_date + timedelta(n)
+	for n in range(int((end_date - start_date).days)):
+		yield start_date + timedelta(n)
 
 class APIError(Exception):
 	pass
@@ -157,7 +159,7 @@ def get_posts_for_date(search_string, domains, start_date, end_date, count, incl
 	url = create_search_url(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), search_string, count)
 	posts = []
 	pages = []
-	while url and len(posts) < count * 3:
+	while url and len(posts) < count * 2:
 		print("Querying URL: " + url)
 		try:
 			new_posts, new_pages, url = query_crowdtangle_posts_api(url, domains)
@@ -174,13 +176,13 @@ def create_query_string(query, domains):
 	return q
 
 def grouper(iterable, n):
-    iterable = iter(iterable)
-    while True:
-        tup = tuple(itertools.islice(iterable, 0, n))
-        if tup:
-            yield tup
-        else:
-            break
+	iterable = iter(iterable)
+	while True:
+		tup = tuple(itertools.islice(iterable, 0, n))
+		if tup:
+			yield tup
+		else:
+			break
 
 def get_posts_for_domains_and_date(query, domains, start_date, end_date, count, limit = None, include_page_info = False):
 	posts = []
@@ -248,34 +250,36 @@ def domain_limited_get_posts_for_domain_date(query, domains, start_date, end_dat
 if __name__ == "__main__":
 	parser = OptionParser()
 	parser.add_option("-s", "--start_date", dest="start_date",
-	                  help="Start date for querying, in the form \%Y-\%m-\%d, Defaults to Today - 1 week", default=None)
+					  help="Start date for querying, in the form \%Y-\%m-\%d, Defaults to Today - 1 week", default=None)
 	parser.add_option("-e", "--end_date",
-	                  dest="end_date", default=None,
-	                  help="End date for querying, in the form \%Y-\%m-\%d, Defaults to Today")
+					  dest="end_date", default=None,
+					  help="End date for querying, in the form \%Y-\%m-\%d, Defaults to Today")
 	parser.add_option("-q", "--query",
-	                  dest="query", default="",
-	                  help="Query string, boolean style e.g. \"biden AND (vote OR ballot)\"")
+					  dest="query", default="",
+					  help="Query string, boolean style e.g. \"biden AND (vote OR ballot)\"")
 	parser.add_option("-d", "--domains",
-	                  dest="domains", default=None,
-	                  help="Comma separated list of domains (e.g. nytimes.com,breitbart.com")
+					  dest="domains", default=None,
+					  help="Comma separated list of domains (e.g. nytimes.com,breitbart.com")
 	parser.add_option("-f", "--domain_file",
-	                  dest="domain_file", default=None,
-	                  help="File with list of domains, one domain per line")
+					  dest="domain_file", default=None,
+					  help="File with list of domains, one domain per line")
 	parser.add_option("-o", "--output_file",
-	                  dest="output_file", default=None,
-	                  help="Name of the output file to output results")
+					  dest="output_file", default=None,
+					  help="Name of the output file to output results " + \
+					 	 "(defaults to output/posts_<query>_<datetime>.tsv)")
 	parser.add_option("-p", "--include_page_info",
-	                  dest="include_page_info", action="store_true", default=False,
-	                  help="Include page related info for query")
+					  dest="include_page_info", action="store_true", default=False,
+					  help="Include page related info for query")
 	parser.add_option("-r", "--page_file",
-	                  dest="page_file", default=False,
-	                  help="Name of the page file to output page results")
+					  dest="page_file", default=False,
+					  help="Name of the page file to output page results" + \
+					  	"(defaults to output/pages_<query>_<datetime>.tsv)")
 	parser.add_option("-c", "--count",
-	                  dest="count", default=20,
-	                  help="Number of posts to return")
+					  dest="count", default=20,
+					  help="Number of posts to return")
 	parser.add_option("-l", "--limit",
-	                  dest="limit", default=None,
-	                  help="Number of URLs per domain to return")
+					  dest="limit", default=None,
+					  help="Number of URLs per domain to return")
 	(options, _) = parser.parse_args()
 	(options, _) = parser.parse_args()
 
@@ -290,12 +294,14 @@ if __name__ == "__main__":
 		start_date = datetime.strptime(options.start_date, "%Y-%m-%d")
 
 	if end_date < start_date:
-		raise Exception("End date before start date")
+		raise Exception("ERROR: End date before start date")
 	domains = []
 	if options.domains:
 		domains = options.domains.split(",")
 	if options.domain_file:
 		domains += [x.strip() for x in open(options.domain_file, "r").readlines()]
+	if not domains:
+		raise Exception("ERROR: Need to include at least one domain")
 	count = int(options.count)
 	limit = None
 	if options.limit:
@@ -304,12 +310,16 @@ if __name__ == "__main__":
 				end_date, count, limit, options.include_page_info)
 	
 	time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-	post_file = "posts_{}_{}.tsv".format(options.query, time)
+	
+	if not os.path.exists("output") and (not options.output_file or \
+		(options.include_page_info and not options.page_file)):
+		os.makedirs("output")
+	post_file = "output/posts_{}_{}.tsv".format(options.query, time)
 	if options.output_file:
-		post_file = options.output_file
+		post_file = options.output_file	
 	write_posts(posts, post_file)
 	if options.include_page_info:
-		page_file = "pages_{}_{}.tsv".format(options.query, time)
+		page_file = "output/pages_{}_{}.tsv".format(options.query, time)
 		if options.page_file:
 			page_file = options.page_file
 		write_pages(pages, page_file)
