@@ -6,9 +6,12 @@
 
 3. Create a CrowdTangle API Key (see: https://authority.site/a-beginners-guide-to-the-crowdtangle-api-565/)
 
-4. Add API key to config.py (`mv example_config.py config.py`)
+4. Add API key to config.py (see `example_config.py` for template)
+	`mv example_config.py config.py`
+	Add API key
 
-5. Run script using instructions below, e.g. `python3 query_crowdtangle.py -f iffy_domains.txt`
+5. Run script using instructions below, e.g. 
+	`python3 query_crowdtangle.py -f iffy_domains.txt`
 
 # To use script
 Usage: `query_crowdtangle.py` [options]
