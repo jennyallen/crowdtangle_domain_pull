@@ -1,20 +1,22 @@
 # Instructions
-1. Download python3 (see https://www.python.org/downloads/)
+1. [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository-from-github/cloning-a-repository) this github repository
 
-2. Install requirements using pip
+2. Download python3 (see https://www.python.org/downloads/)
+
+3. Install requirements using pip
 `pip3 install -r requirements.txt`
 
-3. Create a CrowdTangle API Key (see: https://authority.site/a-beginners-guide-to-the-crowdtangle-api-565/)
+4. Create a CrowdTangle API Key (see: https://authority.site/a-beginners-guide-to-the-crowdtangle-api-565/)
 
-4. Add API key to config.py (see `example_config.py` for template)
+5. Add API key to config.py (see `example_config.py` for template)
 	`mv example_config.py config.py`
 	Add API key
 
-5. Run script using instructions below, e.g. 
+6. Run script using instructions below, e.g. 
 	`python3 query_crowdtangle.py -f iffy_domains.txt`
 
 # To use script
-Usage: `query_crowdtangle.py` [options]
+Usage: `query_crowdtangle.py [options]`
 ```
 Options:
   -h, --help            show this help message and exit
@@ -42,5 +44,7 @@ Options:
 ```
 
 Example:
+
 `python3 query_crowdtangle.py -f iffy_domains.txt -c 100 -l 5 -q "biden AND vote"`
+
  ==> Returns a TSV in the "output" folfer of top 100 posts by engagementwith unique URLs from domains in file "iffy_domains.txt" that contain both "biden" and "vote". At most 5 URLs for domain for variety. 
