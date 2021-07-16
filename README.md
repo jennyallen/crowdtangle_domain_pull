@@ -4,13 +4,16 @@
 2. Download python3 (see https://www.python.org/downloads/)
 
 3. Install requirements using pip
+
 `pip3 install -r requirements.txt`
 
 4. Create a CrowdTangle API Key (see: https://authority.site/a-beginners-guide-to-the-crowdtangle-api-565/)
 
-5. Add API key to config.py (see `example_config.py` for template)
+5. Add API key to config.py, e.g. by:
+
 	`mv example_config.py config.py`
-	Add API key
+
+	Adding API key to `config.py`
 
 6. Run script using instructions below, e.g. 
 	`python3 query_crowdtangle.py -f iffy_domains.txt`
