@@ -24,31 +24,31 @@ Usage: `query_crowdtangle.py [options]`
 Options:
   -h, --help            show this help message and exit
   -s START_DATE, --start_date=START_DATE
-                        Start date for querying, in the form \%Y-\%m-\%d,
+                        Optional. Start date for querying, in the form \%Y-\%m-\%d,
                         Defaults to Today - 1 week
   -e END_DATE, --end_date=END_DATE
-                        End date for querying, in the form \%Y-\%m-\%d,
+                        Optional. End date for querying, in the form \%Y-\%m-\%d,
                         Defaults to Today
   -q QUERY, --query=QUERY
-                        Query string, boolean style e.g. "biden AND (vote OR
-                        ballot)"
+                        Optional. Query string, boolean style e.g. "biden AND (vote OR
+                        ballot)". Defaults to the empty string. 
   -d DOMAINS, --domains=DOMAINS
-                        Comma separated list of domains (e.g.
-                        nytimes.com,breitbart.com
+                        Optional. Comma separated list of domains (e.g.
+                        nytimes.com,breitbart.com. Need either -d or -f flag to run.  
   -f DOMAIN_FILE, --domain_file=DOMAIN_FILE
-                        File with list of domains, one domain per line
+                        Optional. File with list of domains, one domain per line. Need either -f or -d to run. 
   -o OUTPUT_FILE, --output_file=OUTPUT_FILE
-                        Name of the output file to output results (defaults to
+                        Optional. Name of the output file to output results (defaults to
                         output/posts_<query>_<datetime>.tsv)
   -p, --include_page_info
-                        Include page related info for query
+                        Optional. Include page related info for query. Defaults to False. 
   -r PAGE_FILE, --page_file=PAGE_FILE
-                        Name of the page file to output page results(defaults
-                        to output/pages_<query>_<datetime>.tsv)
+                        Optional. Name of the page file to output page results. Defaults
+                        to output/pages_<query>_<datetime>.tsv. 
   -c COUNT, --count=COUNT
-                        Number of posts to return
+                        Optional. Number of posts to return. Defaults to 20. 
   -l LIMIT, --limit=LIMIT
-                        Number of URLs per domain to return
+                        Optional. Number of URLs per domain to return (for variety). Defaults to no limit.  
 ```
 
 Example:
