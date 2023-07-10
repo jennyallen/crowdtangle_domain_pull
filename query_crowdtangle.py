@@ -112,6 +112,7 @@ def create_search_url(start_date, end_date, search_term, count, platforms = "fac
 def query_crowdtangle_posts_api(url, domains):
 	res = requests.get(url)
 	d = json.loads(res.text)
+	print(d)
 	if d["status"] == 429:
 		raise APIError("Timeout")
 	if d["status"] != 200 or "result" not in d:
@@ -133,17 +134,19 @@ def query_crowdtangle_posts_api(url, domains):
 		next_url = results["pagination"]["nextPage"]
 	return posts, pages, next_url
 
-def write_posts(posts, filename = None):
-	with open(filename, "w+") as f:
+def write_posts(posts, filename = None, mode = "w+"):
+	with open(filename, mode) as f:
 		post_writer = csv.DictWriter(f, fieldnames = get_posts_header(), delimiter = "\t")
-		post_writer.writeheader()
+		if mode == "w+":
+			post_writer.writeheader()
 		for p in posts:
 			post_writer.writerow(p)
 
-def write_pages(pages, filename = None):
+def write_pages(pages, filename = None, mode = "w+"):
 	with open(filename, "w+") as f:
 		page_writer = csv.DictWriter(f, fieldnames = get_pages_header(), delimiter = "\t")
-		page_writer.writeheader()
+		if mode == "w+":
+			page_writer.writeheader()
 		for p in pages:
 			page_writer.writerow(p)
 
@@ -156,6 +159,7 @@ def get_pages_header():
 		"accountType","pageAdminTopCountry","pageDescription","pageCreatedDate","pageCategory","verified"]
 
 def get_posts_for_date(search_string, domains, start_date, end_date, count, include_page_info = False):
+	print(search_string)
 	url = create_search_url(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), search_string, count)
 	posts = []
 	pages = []
@@ -172,7 +176,10 @@ def get_posts_for_date(search_string, domains, start_date, end_date, count, incl
 	return posts, pages
 
 def create_query_string(query, domains):
-	q = "(" + query + ") AND (" + " OR ".join(domains) + ")"
+	if not query:
+		q = "(" + " OR ".join(domains) + ")"
+	else:
+		q = "(" + query + ") AND (" + " OR ".join(domains) + ")"
 	return q
 
 def grouper(iterable, n):
@@ -280,6 +287,9 @@ if __name__ == "__main__":
 	parser.add_option("-l", "--limit",
 					  dest="limit", default=None,
 					  help="Number of URLs per domain to return")
+	parser.add_option("--separate",
+					  dest="separate", action="store_true", default=False,
+					  help="Run the query for each domain, separately")
 	(options, _) = parser.parse_args()
 	(options, _) = parser.parse_args()
 
@@ -306,21 +316,36 @@ if __name__ == "__main__":
 	limit = None
 	if options.limit:
 		limit = int(options.limit)
-	posts, pages = domain_limited_get_posts_for_domain_date(options.query, domains, start_date, \
-				end_date, count, limit, options.include_page_info)
-	
+
 	time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-	
 	if not os.path.exists("output") and (not options.output_file or \
 		(options.include_page_info and not options.page_file)):
 		os.makedirs("output")
 	post_file = "output/posts_{}_{}.tsv".format(options.query, time)
 	if options.output_file:
 		post_file = options.output_file	
-	write_posts(posts, post_file)
 	if options.include_page_info:
 		page_file = "output/pages_{}_{}.tsv".format(options.query, time)
 		if options.page_file:
 			page_file = options.page_file
-		write_pages(pages, page_file)
+	if options.separate:
+		first = True
+		for domain in domains:
+			print(domain)
+			posts, pages = domain_limited_get_posts_for_domain_date(options.query, [domain], start_date, \
+						end_date, count, limit, options.include_page_info)
+			if first:
+				mode = "w+"
+			else:
+				mode = "a+"
+			write_posts(posts, post_file, mode)
+			if options.include_page_info:
+				write_pages(pages, page_file)
+			first = False
+	else:
+		posts, pages = domain_limited_get_posts_for_domain_date(options.query, domains, start_date, \
+						end_date, count, limit, options.include_page_info)
+		write_posts(posts, post_file, "w+")
+		if options.include_page_info:
+			write_pages(pages, page_file)
 
